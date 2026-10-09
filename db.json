@@ -12,12 +12,15 @@
     }
   ],
   "savings": [],
-  "cartRich": {},
+  "cartRich": {
+    "2": false,
+    "3": false
+  },
   "cartThin": {},
   "meta": {
     "budgetMonth": 41000,
     "weekPlan": 10250,
     "family": "EfimovII & Co",
-    "updated": "2026-10-09T12:15:07.500Z"
+    "updated": "2026-10-09T12:15:45.886Z"
   }
 }
