@@ -10,50 +10,34 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-    padding: 16px;
-    padding-bottom: 90px;
-    line-height: 1.5;
-    min-height: 100vh;
-    font-size: 15px;
+    background: #0f172a; color: #e2e8f0;
+    padding: 16px; padding-bottom: 90px; line-height: 1.5;
+    min-height: 100vh; font-size: 15px;
   }
   h1 {
     font-size: 22px;
     background: linear-gradient(90deg, #38bdf8, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     margin-bottom: 2px;
   }
   .subtitle { color: #64748b; font-size: 12px; margin-bottom: 16px; }
   .card {
-    background: #1e293b;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #334155;
+    background: #1e293b; border-radius: 14px; padding: 16px;
+    margin-bottom: 14px; border: 1px solid #334155;
   }
   .card h2 {
-    font-size: 14px;
-    color: #94a3b8;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 14px; color: #94a3b8; margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .stat {
-    background: #0f172a;
-    padding: 12px;
-    border-radius: 10px;
+    background: #0f172a; padding: 12px; border-radius: 10px;
     border: 1px solid #334155;
   }
   .stat .label { font-size: 11px; color: #64748b; text-transform: uppercase; }
   .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
-  .green { color: #4ade80; }
-  .red { color: #f87171; }
-  .yellow { color: #fbbf24; }
-  .blue { color: #38bdf8; }
+  .green { color: #4ade80; } .red { color: #f87171; }
+  .yellow { color: #fbbf24; } .blue { color: #38bdf8; }
   .progress { height: 8px; background: #0f172a; border-radius: 999px; overflow: hidden; margin-top: 10px; }
   .progress-bar { height: 100%; background: linear-gradient(90deg, #38bdf8, #a78bfa); transition: width 0.4s ease; }
   .add-form { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -135,7 +119,7 @@
     font-size: 14px; color: #38bdf8;
   }
   .checklist li.done .box { background: #38bdf8; color: #0f172a; }
-  .checklist li.done span:not(.box) { text-decoration: line-through; opacity: 0.5; }
+  .checklist li.done .row span:first-child { text-decoration: line-through; opacity: 0.5; }
   .checklist li .row { display: flex; justify-content: space-between; width: 100%; gap: 8px; }
   .checklist li .price { color: #94a3b8; font-size: 12px; white-space: nowrap; }
   .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
@@ -149,12 +133,19 @@
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: linear-gradient(135deg, #38bdf8, #a78bfa); color: #0f172a; font-weight: 700; border-color: transparent; }
   .btn-danger { border-color: #f87171; color: #f87171; background: transparent; }
+  .sync-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; margin-left: 8px;
+  }
+  .sync-ok { background: #052e16; color: #4ade80; }
+  .sync-warn { background: #422006; color: #fbbf24; }
+  .sync-err { background: #450a0a; color: #f87171; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>💰 Наши траты</h1>
+  <h1>💰 Наши траты <span id="syncBadge" class="sync-badge sync-warn">…</span></h1>
   <p class="subtitle">Бюджет 41 000 ₽ / мес · Семья из 2</p>
 </div>
 
@@ -231,7 +222,6 @@
       </tbody>
     </table>
   </div>
-
   <div class="card">
     <h2>💚 Копилка</h2>
     <table>
@@ -247,16 +237,6 @@
       </tbody>
     </table>
   </div>
-
-  <div class="card">
-    <h2>💡 Советы</h2>
-    <ul class="checklist">
-      <li><span class="box">•</span><div class="row"><span>Подушку держать на отдельном счёте</span></div></li>
-      <li><span class="box">•</span><div class="row"><span>Минус половина сигарет = +2 850 ₽/мес</span></div></li>
-      <li><span class="box">•</span><div class="row"><span>Раз в месяц сверять факт с планом</span></div></li>
-      <li><span class="box">•</span><div class="row"><span>Богатая неделя — закуп, эконом — доедаем</span></div></li>
-    </ul>
-  </div>
 </div>
 
 <!-- 🛒 КОРЗИНА -->
@@ -271,7 +251,7 @@
   </div>
 </div>
 
-<!-- 🍽 МЕНЮ -->
+<!-- 🍽 МЕНЮ + НАСТРОЙКИ -->
 <div id="page-menu" class="page">
   <div class="card">
     <h2>🍽 Меню на неделю</h2>
@@ -289,8 +269,16 @@
     </table>
   </div>
   <div class="card">
-    <h2>⚙️ Настройки</h2>
-    <button class="btn btn-primary" onclick="exportData()">⬇️ Скачать JSON (бэкап)</button>
+    <h2>🔑 GitHub токен</h2>
+    <p style="font-size:12px; color:#64748b; margin-bottom:10px;">
+      Токен хранится только в этом телефоне. Нужен для синхронизации через <code>db.json</code>.
+    </p>
+    <button class="btn btn-primary" onclick="promptToken()">🔑 Ввести / обновить токен</button>
+    <button class="btn" onclick="checkSync()">🔄 Проверить синхронизацию</button>
+  </div>
+  <div class="card">
+    <h2>⚙️ Данные</h2>
+    <button class="btn" onclick="exportData()">⬇️ Скачать JSON (бэкап)</button>
     <button class="btn" onclick="document.getElementById('importFile').click()">📥 Загрузить JSON</button>
     <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
     <button class="btn btn-danger" onclick="resetAll()">🗑 Сбросить всё</button>
@@ -304,7 +292,7 @@
   <button class="tab" onclick="switchTab('month', this)"><span class="icon">📊</span><span>Месяц</span></button>
   <button class="tab" onclick="switchTab('plan', this)"><span class="icon">📋</span><span>План</span></button>
   <button class="tab" onclick="switchTab('cart', this)"><span class="icon">🛒</span><span>Корзина</span></button>
-  <button class="tab" onclick="switchTab('menu', this)"><span class="icon">🍽</span><span>Меню</span></button>
+  <button class="tab" onclick="switchTab('menu', this)"><span class="icon">⚙️</span><span>Ещё</span></button>
 </div>
 
 <script>
@@ -316,14 +304,12 @@ if (window.Telegram?.WebApp) {
   tg.setHeaderColor('secondary_bg_color');
 }
 function haptic(type='light') {
-  if (window.Telegram?.WebApp?.HapticFeedback) {
-    try { window.Telegram.WebApp.HapticFeedback.impactOccurred(type); } catch(e){}
-  }
+  try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(type); } catch(e){}
 }
 
 // ============ КОНФИГ ============
 const BUDGET_MONTH = 41000;
-const WEEK_PLAN = 10250; // средняя план недели
+const WEEK_PLAN = 10250;
 const CATEGORIES = {
   'продукты':   { emoji: '🛒', name: 'Продукты' },
   'бензин':     { emoji: '🛢', name: 'Бензин' },
@@ -338,83 +324,102 @@ const CATEGORIES = {
   'другое':     { emoji: '📦', name: 'Другое' },
 };
 
-const RICH_CART = [
-  ['Курица', '1,5 кг · 375 ₽'],
-  ['Свинина/говядина', '1 кг · 500 ₽'],
-  ['Рыба (минтай/сельдь)', '0,5 кг · 200 ₽'],
-  ['Яйца', '20 шт · 250 ₽'],
-  ['Молоко', '2 л · 150 ₽'],
-  ['Кефир', '1 л · 100 ₽'],
-  ['Творог', '400 г · 180 ₽'],
-  ['Сыр', '200 г · 170 ₽'],
-  ['Сметана', '300 г · 100 ₽'],
-  ['Картофель', '3 кг · 150 ₽'],
-  ['Морковь, лук, свёкла', '2 кг · 150 ₽'],
-  ['Капуста', '1 кочан · 80 ₽'],
-  ['Помидоры, огурцы', '1,5 кг · 300 ₽'],
-  ['Яблоки', '2 кг · 200 ₽'],
-  ['Бананы', '1 кг · 100 ₽'],
-  ['Крупы (рис, гречка, овсянка)', '2 кг · 250 ₽'],
-  ['Макароны', '1 кг · 100 ₽'],
-  ['Хлеб', '2 шт · 100 ₽'],
-  ['Масло растительное', '1 л · 150 ₽'],
-  ['Чай/кофе', '— · 300 ₽'],
-  ['Специи, соль, сахар', '— · 150 ₽'],
-];
-const THIN_CART = [
-  ['Курица', '1 кг · 250 ₽'],
-  ['Рыба (сельдь/минтай)', '0,5 кг · 200 ₽'],
-  ['Яйца', '10 шт · 130 ₽'],
-  ['Молоко', '2 л · 150 ₽'],
-  ['Кефир/йогурт', '1 л · 100 ₽'],
-  ['Творог', '400 г · 180 ₽'],
-  ['Сыр', '200 г · 170 ₽'],
-  ['Хлеб', '2 шт · 100 ₽'],
-  ['Картофель', '2 кг · 100 ₽'],
-  ['Морковь, лук', '1 кг · 80 ₽'],
-  ['Капуста', '1 кочан · 80 ₽'],
-  ['Помидоры, огурцы', '1 кг · 200 ₽'],
-  ['Яблоки', '1,5 кг · 150 ₽'],
-  ['Бананы', '1 кг · 100 ₽'],
-  ['Макароны', '0,5 кг · 60 ₽'],
-  ['Чай/кофе', '— · 150 ₽'],
-  ['Специи, соль, сахар', '— · 100 ₽'],
-];
+// ⚠️ ВПИШИ СВОЙ НИК ГИТХАБА И РЕПОЗИТОРИЙ
+const GH = {
+  owner: 'crocodele10101',        // ← ТВОЙ НИК
+  repo: 'FamilyMoney64',           // ← название репо
+  path: 'db.json',
+  branch: 'main',
+};
+const RAW_URL = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${GH.path}`;
+const API_URL = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
 
-// ============ ХРАНИЛИЩЕ ============
-function load() {
-  return {
-    expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
-    cartRich: JSON.parse(localStorage.getItem('cartRich') || '{}'),
-    cartThin: JSON.parse(localStorage.getItem('cartThin') || '{}'),
-  };
-}
-function saveExpenses(list) { localStorage.setItem('expenses', JSON.stringify(list)); }
-function saveCartRich(obj) { localStorage.setItem('cartRich', JSON.stringify(obj)); }
-function saveCartThin(obj) { localStorage.setItem('cartThin', JSON.stringify(obj)); }
-
+// ============ ДАННЫЕ ============
+let DB = { expenses: [], savings: [], cartRich: {}, cartThin: {}, meta: {} };
 let selectedCat = 'продукты';
+let isSyncing = false;
 
-// ============ ДОБАВЛЕНИЕ ============
-function addExpense() {
-  const input = document.getElementById('amount');
-  const amount = parseFloat(input.value);
-  if (!amount || amount <= 0) { input.focus(); return; }
-  const data = load();
-  data.expenses.push({ amount, category: selectedCat, date: new Date().toISOString() });
-  saveExpenses(data.expenses);
-  input.value = '';
-  input.focus();
-  haptic('light');
-  render();
+function getToken() { return localStorage.getItem('gh_token') || ''; }
+function setToken(t) { localStorage.setItem('gh_token', t); }
+function clearToken() { localStorage.removeItem('gh_token'); }
+
+function setSyncBadge(state, text) {
+  const el = document.getElementById('syncBadge');
+  el.className = 'sync-badge sync-' + state;
+  el.textContent = text;
 }
-function deleteExpense(index) {
-  if (!confirm('Удалить трату?')) return;
-  const data = load();
-  data.expenses.splice(index, 1);
-  saveExpenses(data.expenses);
-  haptic('medium');
-  render();
+
+async function loadDB() {
+  // 1. Сначала кэш
+  const cached = localStorage.getItem('db_cache');
+  if (cached) {
+    try { DB = JSON.parse(cached); } catch(e){}
+  }
+  // 2. Потом свежие с GitHub
+  try {
+    const r = await fetch(RAW_URL + '?t=' + Date.now());
+    if (r.ok) {
+      DB = await r.json();
+      localStorage.setItem('db_cache', JSON.stringify(DB));
+      setSyncBadge('ok', '✓');
+    } else {
+      setSyncBadge('warn', 'кэш');
+    }
+  } catch (e) {
+    setSyncBadge('warn', 'кэш');
+  }
+}
+
+async function saveDB(message = 'Update from app') {
+  DB.meta = DB.meta || {};
+  DB.meta.updated = new Date().toISOString();
+  localStorage.setItem('db_cache', JSON.stringify(DB));
+
+  const token = getToken();
+  if (!token) {
+    setSyncBadge('warn', 'нет токена');
+    return { ok: false, reason: 'no_token' };
+  }
+  if (isSyncing) return { ok: false, reason: 'busy' };
+
+  isSyncing = true;
+  setSyncBadge('warn', '...');
+  try {
+    // Получаем SHA
+    const metaRes = await fetch(API_URL + '?ref=' + GH.branch + '&t=' + Date.now(), {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!metaRes.ok) {
+      const err = await metaRes.json();
+      throw new Error(err.message || 'Auth error');
+    }
+    const meta = await metaRes.json();
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DB, null, 2))));
+
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, content, sha: meta.sha, branch: GH.branch })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Save error');
+    }
+    setSyncBadge('ok', '✓');
+    return { ok: true };
+  } catch (e) {
+    console.error('GitHub save error:', e);
+    setSyncBadge('err', 'ошибка');
+    return { ok: false, reason: e.message };
+  } finally {
+    isSyncing = false;
+  }
 }
 
 // ============ КАТЕГОРИИ ============
@@ -425,11 +430,7 @@ function renderCategories() {
      </button>`
   ).join('');
 }
-function selectCat(key) {
-  selectedCat = key;
-  haptic('light');
-  renderCategories();
-}
+function selectCat(key) { selectedCat = key; haptic('light'); renderCategories(); }
 
 // ============ ХЕЛПЕРЫ ============
 function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; }
@@ -437,32 +438,60 @@ function isSameDay(d1, d2) {
   return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
 }
 function startOfWeek() {
-  const now = new Date();
-  const d = new Date(now);
+  const now = new Date(); const d = new Date(now);
   const day = (now.getDay() + 6) % 7;
-  d.setDate(now.getDate() - day);
-  d.setHours(0,0,0,0);
+  d.setDate(now.getDate() - day); d.setHours(0,0,0,0);
   return d;
 }
-function getWeekExpenses() {
-  const start = startOfWeek();
-  return load().expenses.filter(e => new Date(e.date) >= start);
-}
+function getWeekExpenses() { return (DB.expenses||[]).filter(e => new Date(e.date) >= startOfWeek()); }
 function getMonthExpenses() {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  return load().expenses.filter(e => new Date(e.date) >= start);
+  return (DB.expenses||[]).filter(e => new Date(e.date) >= start);
+}
+
+// ============ ДЕЙСТВИЯ ============
+async function addExpense() {
+  const input = document.getElementById('amount');
+  const amount = parseFloat(input.value);
+  if (!amount || amount <= 0) { input.focus(); return; }
+  DB.expenses = DB.expenses || [];
+  DB.expenses.push({ amount, category: selectedCat, date: new Date().toISOString() });
+  input.value = ''; input.focus();
+  haptic('light');
+  render();
+  const res = await saveDB(`Add ${amount} ${selectedCat}`);
+  if (res.reason === 'no_token') {
+    if (confirm('Нет токена — данные сохранены только локально.\n\nВвести токен сейчас?')) promptToken();
+  }
+}
+
+async function deleteExpense(index) {
+  if (!confirm('Удалить трату?')) return;
+  DB.expenses.splice(index, 1);
+  haptic('medium');
+  render();
+  await saveDB('Delete expense');
+}
+
+async function toggleCart(type, i) {
+  const key = type === 'rich' ? 'cartRich' : 'cartThin';
+  DB[key] = DB[key] || {};
+  DB[key][i] = !DB[key][i];
+  haptic('light');
+  renderCart();
+  await saveDB('Toggle cart');
 }
 
 // ============ РЕНДЕР ============
 function renderToday() {
-  const list = load().expenses.filter(e => isSameDay(new Date(e.date), new Date()));
+  const list = (DB.expenses||[]).filter(e => isSameDay(new Date(e.date), new Date()));
   const el = document.getElementById('todayList');
   if (!list.length) { el.innerHTML = '<div class="empty">Сегодня трат не было</div>'; return; }
-  const all = load().expenses;
+  const all = DB.expenses;
   el.innerHTML = list.slice().reverse().map(e => {
     const idx = all.indexOf(e);
-    const c = CATEGORIES[e.category];
+    const c = CATEGORIES[e.category] || {emoji:'❓', name:e.category};
     return `<div class="expense">
       <div class="left">
         <span class="emoji">${c.emoji}</span>
@@ -487,8 +516,8 @@ function renderWeek() {
   const pct = Math.min(100, (total / WEEK_PLAN) * 100);
   const bar = document.getElementById('weekBar');
   bar.style.width = pct + '%';
-  bar.style.background = total > WEEK_PLAN 
-    ? 'linear-gradient(90deg,#f87171,#fbbf24)' 
+  bar.style.background = total > WEEK_PLAN
+    ? 'linear-gradient(90deg,#f87171,#fbbf24)'
     : 'linear-gradient(90deg,#38bdf8,#a78bfa)';
   const left = WEEK_PLAN - total;
   document.getElementById('weekHint').textContent = left >= 0
@@ -505,7 +534,7 @@ function renderMonth() {
   const leftEl = document.getElementById('monthLeft');
   leftEl.textContent = fmt(left);
   leftEl.className = 'value ' + (left > 0 ? 'green' : 'red');
-  const savings = load().expenses.filter(e => e.category === 'подушка').reduce((s,e)=>s+e.amount,0);
+  const savings = (DB.expenses||[]).filter(e => e.category === 'подушка').reduce((s,e)=>s+e.amount,0);
   document.getElementById('savingsTotal').textContent = fmt(savings);
   renderBreakdown('monthBreakdown', list);
   renderAll();
@@ -530,12 +559,12 @@ function renderBreakdown(elId, list) {
 }
 
 function renderAll() {
-  const list = load().expenses;
+  const list = DB.expenses || [];
   const el = document.getElementById('allList');
   if (!list.length) { el.innerHTML = '<div class="empty">Пока ничего нет</div>'; return; }
   el.innerHTML = list.slice().reverse().slice(0, 100).map(e => {
     const idx = list.indexOf(e);
-    const c = CATEGORIES[e.category];
+    const c = CATEGORIES[e.category] || {emoji:'❓', name:e.category};
     const d = new Date(e.date);
     return `<div class="expense">
       <div class="left">
@@ -554,11 +583,35 @@ function renderAll() {
 }
 
 // ============ КОРЗИНА ============
+const RICH_CART = [
+  ['Курица', '1,5 кг · 375 ₽'], ['Свинина/говядина', '1 кг · 500 ₽'],
+  ['Рыба (минтай/сельдь)', '0,5 кг · 200 ₽'], ['Яйца', '20 шт · 250 ₽'],
+  ['Молоко', '2 л · 150 ₽'], ['Кефир', '1 л · 100 ₽'],
+  ['Творог', '400 г · 180 ₽'], ['Сыр', '200 г · 170 ₽'],
+  ['Сметана', '300 г · 100 ₽'], ['Картофель', '3 кг · 150 ₽'],
+  ['Морковь, лук, свёкла', '2 кг · 150 ₽'], ['Капуста', '1 кочан · 80 ₽'],
+  ['Помидоры, огурцы', '1,5 кг · 300 ₽'], ['Яблоки', '2 кг · 200 ₽'],
+  ['Бананы', '1 кг · 100 ₽'], ['Крупы', '2 кг · 250 ₽'],
+  ['Макароны', '1 кг · 100 ₽'], ['Хлеб', '2 шт · 100 ₽'],
+  ['Масло растительное', '1 л · 150 ₽'], ['Чай/кофе', '— · 300 ₽'],
+  ['Специи, соль, сахар', '— · 150 ₽'],
+];
+const THIN_CART = [
+  ['Курица', '1 кг · 250 ₽'], ['Рыба (сельдь/минтай)', '0,5 кг · 200 ₽'],
+  ['Яйца', '10 шт · 130 ₽'], ['Молоко', '2 л · 150 ₽'],
+  ['Кефир/йогурт', '1 л · 100 ₽'], ['Творог', '400 г · 180 ₽'],
+  ['Сыр', '200 г · 170 ₽'], ['Хлеб', '2 шт · 100 ₽'],
+  ['Картофель', '2 кг · 100 ₽'], ['Морковь, лук', '1 кг · 80 ₽'],
+  ['Капуста', '1 кочан · 80 ₽'], ['Помидоры, огурцы', '1 кг · 200 ₽'],
+  ['Яблоки', '1,5 кг · 150 ₽'], ['Бананы', '1 кг · 100 ₽'],
+  ['Макароны', '0,5 кг · 60 ₽'], ['Чай/кофе', '— · 150 ₽'],
+  ['Специи, соль, сахар', '— · 100 ₽'],
+];
+
 function renderCart() {
-  const data = load();
   ['rich', 'thin'].forEach(type => {
     const items = type === 'rich' ? RICH_CART : THIN_CART;
-    const checked = type === 'rich' ? data.cartRich : data.cartThin;
+    const checked = (type === 'rich' ? DB.cartRich : DB.cartThin) || {};
     const elId = type === 'rich' ? 'richList' : 'thinList';
     document.getElementById(elId).innerHTML = items.map((item, i) => {
       const done = checked[i] ? 'done' : '';
@@ -569,24 +622,28 @@ function renderCart() {
     }).join('');
   });
 }
-function toggleCart(type, i) {
-  const data = load();
-  const obj = type === 'rich' ? data.cartRich : data.cartThin;
-  obj[i] = !obj[i];
-  if (type === 'rich') saveCartRich(obj); else saveCartThin(obj);
-  haptic('light');
-  renderCart();
+
+// ============ ТОКЕН / СИНХРОН ============
+function promptToken() {
+  const t = prompt('Вставь GitHub Fine-grained token:\n\n(Он хранится только в этом телефоне, никуда не передаётся)');
+  if (t && t.trim()) {
+    setToken(t.trim());
+    alert('✅ Токен сохранён. Проверяю...');
+    checkSync();
+  }
+}
+async function checkSync() {
+  if (!getToken()) { alert('Сначала введи токен'); return; }
+  setSyncBadge('warn', '...');
+  // Синхронизируем — пробуем записать пустой апдейт
+  const res = await saveDB('Sync check');
+  if (res.ok) alert('✅ Всё работает! Данные летят в db.json');
+  else alert('❌ Ошибка: ' + res.reason + '\n\nПроверь токен и права (Contents: Read and write).');
 }
 
-// ============ ЭКСПОРТ / ИМПОРТ ============
+// ============ ЭКСПОРТ / ИМПОРТ / СБРОС ============
 function exportData() {
-  const data = {
-    expenses: load().expenses,
-    cartRich: load().cartRich,
-    cartThin: load().cartThin,
-    exported: new Date().toISOString(),
-    version: 1,
-  };
+  const data = { ...DB, exported: new Date().toISOString(), version: 1 };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -599,25 +656,23 @@ function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
       const data = JSON.parse(e.target.result);
       if (!confirm('Заменить текущие данные файлом?')) return;
-      if (data.expenses) saveExpenses(data.expenses);
-      if (data.cartRich) saveCartRich(data.cartRich);
-      if (data.cartThin) saveCartThin(data.cartThin);
+      DB = { ...DB, ...data };
       render();
+      await saveDB('Import from JSON');
       alert('✅ Данные загружены');
-    } catch (err) {
-      alert('❌ Ошибка чтения файла');
-    }
+    } catch (err) { alert('❌ Ошибка чтения файла'); }
   };
   reader.readAsText(file);
 }
 function resetAll() {
-  if (!confirm('Удалить ВСЕ данные без возможности восстановления?')) return;
-  if (!confirm('Точно? Лучше сначала скачай JSON!')) return;
-  localStorage.clear();
+  if (!confirm('Удалить ВСЕ данные?')) return;
+  if (!confirm('Точно? Сначала скачай JSON-бэкап!')) return;
+  localStorage.removeItem('db_cache');
+  localStorage.removeItem('gh_token');
   location.reload();
 }
 
@@ -638,7 +693,15 @@ function render() {
   renderMonth();
   renderCart();
 }
-render();
+(async () => {
+  await loadDB();
+  render();
+  if (!getToken()) {
+    setTimeout(() => {
+      if (confirm('Синхронизация не настроена.\n\nВвести GitHub токен сейчас?')) promptToken();
+    }, 800);
+  }
+})();
 document.getElementById('amount').addEventListener('keydown', e => {
   if (e.key === 'Enter') addExpense();
 });
