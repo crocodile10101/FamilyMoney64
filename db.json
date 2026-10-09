@@ -1,5 +1,11 @@
 {
-  "expenses": [],
+  "expenses": [
+    {
+      "amount": 5000,
+      "category": "подушка",
+      "date": "2026-10-09T12:14:43.042Z"
+    }
+  ],
   "savings": [],
   "cartRich": {},
   "cartThin": {},
@@ -7,6 +13,6 @@
     "budgetMonth": 41000,
     "weekPlan": 10250,
     "family": "EfimovII & Co",
-    "updated": "2026-10-09T12:14:34.122Z"
+    "updated": "2026-10-09T12:14:43.048Z"
   }
 }
