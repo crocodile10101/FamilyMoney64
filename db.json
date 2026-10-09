@@ -13,8 +13,8 @@
   ],
   "savings": [],
   "cartRich": {
-    "0": true,
-    "1": true,
+    "0": false,
+    "1": false,
     "2": false,
     "3": false
   },
@@ -23,6 +23,6 @@
     "budgetMonth": 41000,
     "weekPlan": 10250,
     "family": "EfimovII & Co",
-    "updated": "2026-10-09T12:15:57.204Z"
+    "updated": "2026-10-09T12:27:48.776Z"
   }
 }
