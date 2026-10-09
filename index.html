@@ -1,124 +1,647 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Семейные траты</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            margin: 0;
-            padding: 16px;
-            padding-bottom: 80px; /* Место для MainButton */
-        }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 { font-size: 20px; margin-bottom: 16px; }
-        .balance-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        .balance-amount { font-size: 28px; font-weight: bold; margin: 8px 0; }
-        .expense-list { list-style: none; padding: 0; }
-        .expense-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #eee);
-        }
-        .expense-category { font-weight: 500; }
-        .expense-amount { color: var(--tg-theme-destructive-text-color, #ff3b30); }
-        .btn-add {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>Наши траты</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px;
+    padding-bottom: 90px;
+    line-height: 1.5;
+    min-height: 100vh;
+    font-size: 15px;
+  }
+  h1 {
+    font-size: 22px;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2px;
+  }
+  .subtitle { color: #64748b; font-size: 12px; margin-bottom: 16px; }
+  .card {
+    background: #1e293b;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid #334155;
+  }
+  .card h2 {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .stat {
+    background: #0f172a;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+  }
+  .stat .label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+  .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .green { color: #4ade80; }
+  .red { color: #f87171; }
+  .yellow { color: #fbbf24; }
+  .blue { color: #38bdf8; }
+  .progress { height: 8px; background: #0f172a; border-radius: 999px; overflow: hidden; margin-top: 10px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, #38bdf8, #a78bfa); transition: width 0.4s ease; }
+  .add-form { display: flex; gap: 8px; margin-bottom: 14px; }
+  .add-form input {
+    flex: 1; padding: 14px; font-size: 16px; border-radius: 12px;
+    border: 1px solid #334155; background: #0f172a; color: #e2e8f0; outline: none;
+  }
+  .add-form input:focus { border-color: #38bdf8; }
+  .add-form button {
+    padding: 14px 20px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    color: #0f172a; font-weight: 700; font-size: 16px; cursor: pointer;
+  }
+  .add-form button:active { transform: scale(0.97); }
+  .categories { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .cat-btn {
+    padding: 12px 6px; border-radius: 12px; border: 1px solid #334155;
+    background: #1e293b; color: #e2e8f0; font-size: 12px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: all 0.15s;
+  }
+  .cat-btn .emoji { font-size: 20px; }
+  .cat-btn.selected {
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    color: #0f172a; font-weight: 700; border-color: transparent;
+  }
+  .expense {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #334155; font-size: 14px;
+  }
+  .expense:last-child { border-bottom: none; }
+  .expense .left { display: flex; align-items: center; gap: 10px; }
+  .expense .emoji { font-size: 20px; }
+  .expense .info { display: flex; flex-direction: column; }
+  .expense .date { font-size: 11px; color: #64748b; }
+  .expense .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .expense .del {
+    background: transparent; border: none; color: #64748b;
+    font-size: 18px; cursor: pointer; padding: 4px 8px; margin-left: 8px;
+  }
+  .expense .del:active { color: #f87171; }
+  .empty { color: #64748b; text-align: center; padding: 20px 0; font-size: 14px; }
+  .tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #1e293b; border-top: 1px solid #334155;
+    display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1; min-width: 60px; background: transparent; border: none;
+    color: #64748b; font-size: 10px; padding: 8px 4px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .tab .icon { font-size: 20px; }
+  .tab.active { color: #38bdf8; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .bar-row .name { width: 90px; color: #94a3b8; }
+  .bar-row .bar-bg { flex: 1; height: 18px; background: #0f172a; border-radius: 6px; overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #a78bfa); border-radius: 6px; }
+  .bar-row .val { width: 70px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .total-row { background: #0f172a; font-weight: 700; }
+  .total-row td { color: #38bdf8; border-top: 2px solid #38bdf8; }
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 10px 0; border-bottom: 1px dashed #334155;
+    display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li .box {
+    width: 20px; height: 20px; border: 2px solid #38bdf8;
+    border-radius: 5px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #38bdf8;
+  }
+  .checklist li.done .box { background: #38bdf8; color: #0f172a; }
+  .checklist li.done span:not(.box) { text-decoration: line-through; opacity: 0.5; }
+  .checklist li .row { display: flex; justify-content: space-between; width: 100%; gap: 8px; }
+  .checklist li .price { color: #94a3b8; font-size: 12px; white-space: nowrap; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .badge-rich { background: #422006; color: #fbbf24; }
+  .badge-thin { background: #052e16; color: #4ade80; }
+  .btn {
+    width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155;
+    background: #1e293b; color: #e2e8f0; font-size: 14px; cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: linear-gradient(135deg, #38bdf8, #a78bfa); color: #0f172a; font-weight: 700; border-color: transparent; }
+  .btn-danger { border-color: #f87171; color: #f87171; background: transparent; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>💚 Наши траты</h1>
 
-        <div class="balance-card">
-            <div>Остаток на месяц</div>
-            <div class="balance-amount" id="balance">41 000 ₽</div>
-            <div>Потрачено: <span id="spent">0</span> ₽</div>
-        </div>
+<div class="header">
+  <h1>💰 Наши траты</h1>
+  <p class="subtitle">Бюджет 41 000 ₽ / мес · Семья из 2</p>
+</div>
 
-        <h2>Последние операции</h2>
-        <ul class="expense-list" id="expenseList">
-            <!-- Сюда будут добавляться траты -->
-        </ul>
+<!-- ➕ ДОБАВИТЬ -->
+<div id="page-add" class="page active">
+  <div class="card">
+    <h2>Добавить трату</h2>
+    <div class="add-form">
+      <input type="number" inputmode="decimal" id="amount" placeholder="Сумма, ₽">
+      <button onclick="addExpense()">+</button>
     </div>
+    <div class="categories" id="catList"></div>
+  </div>
+  <div class="card">
+    <h2>Сегодня</h2>
+    <div id="todayList"></div>
+  </div>
+</div>
 
-    <button class="btn-add" onclick="addExpense()">+</button>
+<!-- 📅 НЕДЕЛЯ -->
+<div id="page-week" class="page">
+  <div class="card">
+    <h2>Эта неделя</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Потрачено</div><div class="value red" id="weekSpent">0 ₽</div></div>
+      <div class="stat"><div class="label">План</div><div class="value blue" id="weekPlan">0 ₽</div></div>
+    </div>
+    <div class="progress"><div class="progress-bar" id="weekBar" style="width:0%"></div></div>
+    <p style="font-size:12px; color:#64748b; margin-top:10px;" id="weekHint"></p>
+  </div>
+  <div class="card">
+    <h2>По категориям за неделю</h2>
+    <div id="weekBreakdown"></div>
+  </div>
+</div>
 
-    <script>
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand(); // Развернуть на весь экран
+<!-- 📊 МЕСЯЦ -->
+<div id="page-month" class="page">
+  <div class="card">
+    <h2>Месяц</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Бюджет</div><div class="value blue">41 000 ₽</div></div>
+      <div class="stat"><div class="label">Потрачено</div><div class="value red" id="monthSpent">0 ₽</div></div>
+      <div class="stat"><div class="label">Осталось</div><div class="value green" id="monthLeft">41 000 ₽</div></div>
+      <div class="stat"><div class="label">В подушку</div><div class="value green" id="savingsTotal">0 ₽</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Траты по категориям</h2>
+    <div id="monthBreakdown"></div>
+  </div>
+  <div class="card">
+    <h2>Все траты</h2>
+    <div id="allList"></div>
+  </div>
+</div>
 
-        // Устанавливаем цвет заголовка как у Telegram
-        tg.setHeaderColor('secondary_bg_color');
+<!-- 📋 ПЛАН -->
+<div id="page-plan" class="page">
+  <div class="card">
+    <h2>📊 Бюджет на месяц</h2>
+    <table>
+      <thead>
+        <tr><th>Категория</th><th class="num">Нед 1</th><th class="num">Нед 2</th><th class="num">Нед 3</th><th class="num">Нед 4</th><th class="num">Итого</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🛒 Продукты</td><td class="num">4 000</td><td class="num">2 500</td><td class="num">4 000</td><td class="num">2 500</td><td class="num">13 000</td></tr>
+        <tr><td>🛢 Бензин</td><td class="num">1 500</td><td class="num">1 500</td><td class="num">1 500</td><td class="num">1 500</td><td class="num">6 000</td></tr>
+        <tr><td>🚬 Сигареты</td><td class="num">1 425</td><td class="num">1 425</td><td class="num">1 425</td><td class="num">1 425</td><td class="num">5 700</td></tr>
+        <tr><td>🧴 Хозтовары</td><td class="num">500</td><td class="num">500</td><td class="num">500</td><td class="num">500</td><td class="num">2 000</td></tr>
+        <tr><td>🏠 Коммуналка</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">4 000</td><td class="num">4 000</td></tr>
+        <tr><td>📶 Связь</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">1 500</td><td class="num">1 500</td></tr>
+        <tr class="total-row"><td>ИТОГО</td><td class="num">7 425</td><td class="num">5 925</td><td class="num">7 425</td><td class="num">11 425</td><td class="num">32 200</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-        // Твои данные (пока локально)
-        let balance = 41000;
-        let expenses = [];
+  <div class="card">
+    <h2>💚 Копилка</h2>
+    <table>
+      <thead><tr><th>Период</th><th class="num">Отложено</th></tr></thead>
+      <tbody>
+        <tr><td>Неделя 1</td><td class="num green">2 200</td></tr>
+        <tr><td>Неделя 2</td><td class="num green">4 400</td></tr>
+        <tr><td>Неделя 3</td><td class="num green">6 600</td></tr>
+        <tr><td>Неделя 4</td><td class="num green">8 800</td></tr>
+        <tr class="total-row"><td>Через 3 мес</td><td class="num">26 400</td></tr>
+        <tr class="total-row"><td>Через 6 мес</td><td class="num">52 800</td></tr>
+        <tr class="total-row"><td>Через год</td><td class="num">105 600</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-        // Пример добавления траты
-        function addExpense() {
-            // В реальном приложении тут будет всплывающая форма
-            const amount = parseFloat(prompt("Сумма:"));
-            const category = prompt("Категория (продукты, бензин, сигареты...):");
+  <div class="card">
+    <h2>💡 Советы</h2>
+    <ul class="checklist">
+      <li><span class="box">•</span><div class="row"><span>Подушку держать на отдельном счёте</span></div></li>
+      <li><span class="box">•</span><div class="row"><span>Минус половина сигарет = +2 850 ₽/мес</span></div></li>
+      <li><span class="box">•</span><div class="row"><span>Раз в месяц сверять факт с планом</span></div></li>
+      <li><span class="box">•</span><div class="row"><span>Богатая неделя — закуп, эконом — доедаем</span></div></li>
+    </ul>
+  </div>
+</div>
 
-            if (amount && category) {
-                expenses.push({ amount, category });
-                balance -= amount;
-                renderExpenses();
+<!-- 🛒 КОРЗИНА -->
+<div id="page-cart" class="page">
+  <div class="card">
+    <h2>🛒 Богатая неделя <span class="badge badge-rich">4 000 ₽</span></h2>
+    <ul class="checklist" id="richList"></ul>
+  </div>
+  <div class="card">
+    <h2>🛒 Эконом-неделя <span class="badge badge-thin">2 500 ₽</span></h2>
+    <ul class="checklist" id="thinList"></ul>
+  </div>
+</div>
 
-                // Вибрация для тактильного отклика
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
+<!-- 🍽 МЕНЮ -->
+<div id="page-menu" class="page">
+  <div class="card">
+    <h2>🍽 Меню на неделю</h2>
+    <table>
+      <thead><tr><th>День</th><th>Завтрак</th><th>Обед</th><th>Ужин</th></tr></thead>
+      <tbody>
+        <tr><td>Пн</td><td>Овсянка + банан</td><td>Куриный суп</td><td>Макароны с курицей</td></tr>
+        <tr><td>Вт</td><td>Яичница</td><td>Суп</td><td>Гречка + котлеты</td></tr>
+        <tr><td>Ср</td><td>Творог + сметана</td><td>Макароны с сыром</td><td>Туш. картошка с мясом</td></tr>
+        <tr><td>Чт</td><td>Овсянка</td><td>Гречка с курицей</td><td>Рыба + рис</td></tr>
+        <tr><td>Пт</td><td>Бутерброды</td><td>Плов</td><td>Салат + курица</td></tr>
+        <tr><td>Сб</td><td>Блины</td><td>Борщ</td><td>Пельмени</td></tr>
+        <tr><td>Вс</td><td>Яйца</td><td>Остатки</td><td>Пицца домашняя</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>⚙️ Настройки</h2>
+    <button class="btn btn-primary" onclick="exportData()">⬇️ Скачать JSON (бэкап)</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">📥 Загрузить JSON</button>
+    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+    <button class="btn btn-danger" onclick="resetAll()">🗑 Сбросить всё</button>
+  </div>
+</div>
 
-        function renderExpenses() {
-            const list = document.getElementById('expenseList');
-            const spentEl = document.getElementById('spent');
-            const balanceEl = document.getElementById('balance');
+<!-- ТАБ-БАР -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('add', this)"><span class="icon">➕</span><span>Добавить</span></button>
+  <button class="tab" onclick="switchTab('week', this)"><span class="icon">📅</span><span>Неделя</span></button>
+  <button class="tab" onclick="switchTab('month', this)"><span class="icon">📊</span><span>Месяц</span></button>
+  <button class="tab" onclick="switchTab('plan', this)"><span class="icon">📋</span><span>План</span></button>
+  <button class="tab" onclick="switchTab('cart', this)"><span class="icon">🛒</span><span>Корзина</span></button>
+  <button class="tab" onclick="switchTab('menu', this)"><span class="icon">🍽</span><span>Меню</span></button>
+</div>
 
-            list.innerHTML = '';
-            let totalSpent = 0;
+<script>
+// ============ TELEGRAM INIT ============
+if (window.Telegram?.WebApp) {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('secondary_bg_color');
+}
+function haptic(type='light') {
+  if (window.Telegram?.WebApp?.HapticFeedback) {
+    try { window.Telegram.WebApp.HapticFeedback.impactOccurred(type); } catch(e){}
+  }
+}
 
-            expenses.forEach(exp => {
-                totalSpent += exp.amount;
-                const li = document.createElement('li');
-                li.className = 'expense-item';
-                li.innerHTML = `
-                    <span class="expense-category">${exp.category}</span>
-                    <span class="expense-amount">-${exp.amount} ₽</span>
-                `;
-                list.appendChild(li);
-            });
+// ============ КОНФИГ ============
+const BUDGET_MONTH = 41000;
+const WEEK_PLAN = 10250; // средняя план недели
+const CATEGORIES = {
+  'продукты':   { emoji: '🛒', name: 'Продукты' },
+  'бензин':     { emoji: '🛢', name: 'Бензин' },
+  'сигареты':   { emoji: '🚬', name: 'Сигареты' },
+  'хозтовары':  { emoji: '🧴', name: 'Хозтовары' },
+  'коммуналка': { emoji: '🏠', name: 'Коммуналка' },
+  'связь':      { emoji: '📶', name: 'Связь' },
+  'здоровье':   { emoji: '💊', name: 'Здоровье' },
+  'подарки':    { emoji: '🎁', name: 'Подарки' },
+  'машина':     { emoji: '🚗', name: 'Машина' },
+  'подушка':    { emoji: '💰', name: 'Подушка' },
+  'другое':     { emoji: '📦', name: 'Другое' },
+};
 
-            spentEl.textContent = totalSpent.toLocaleString('ru-RU');
-            balanceEl.textContent = (41000 - totalSpent).toLocaleString('ru-RU') + ' ₽';
-        }
+const RICH_CART = [
+  ['Курица', '1,5 кг · 375 ₽'],
+  ['Свинина/говядина', '1 кг · 500 ₽'],
+  ['Рыба (минтай/сельдь)', '0,5 кг · 200 ₽'],
+  ['Яйца', '20 шт · 250 ₽'],
+  ['Молоко', '2 л · 150 ₽'],
+  ['Кефир', '1 л · 100 ₽'],
+  ['Творог', '400 г · 180 ₽'],
+  ['Сыр', '200 г · 170 ₽'],
+  ['Сметана', '300 г · 100 ₽'],
+  ['Картофель', '3 кг · 150 ₽'],
+  ['Морковь, лук, свёкла', '2 кг · 150 ₽'],
+  ['Капуста', '1 кочан · 80 ₽'],
+  ['Помидоры, огурцы', '1,5 кг · 300 ₽'],
+  ['Яблоки', '2 кг · 200 ₽'],
+  ['Бананы', '1 кг · 100 ₽'],
+  ['Крупы (рис, гречка, овсянка)', '2 кг · 250 ₽'],
+  ['Макароны', '1 кг · 100 ₽'],
+  ['Хлеб', '2 шт · 100 ₽'],
+  ['Масло растительное', '1 л · 150 ₽'],
+  ['Чай/кофе', '— · 300 ₽'],
+  ['Специи, соль, сахар', '— · 150 ₽'],
+];
+const THIN_CART = [
+  ['Курица', '1 кг · 250 ₽'],
+  ['Рыба (сельдь/минтай)', '0,5 кг · 200 ₽'],
+  ['Яйца', '10 шт · 130 ₽'],
+  ['Молоко', '2 л · 150 ₽'],
+  ['Кефир/йогурт', '1 л · 100 ₽'],
+  ['Творог', '400 г · 180 ₽'],
+  ['Сыр', '200 г · 170 ₽'],
+  ['Хлеб', '2 шт · 100 ₽'],
+  ['Картофель', '2 кг · 100 ₽'],
+  ['Морковь, лук', '1 кг · 80 ₽'],
+  ['Капуста', '1 кочан · 80 ₽'],
+  ['Помидоры, огурцы', '1 кг · 200 ₽'],
+  ['Яблоки', '1,5 кг · 150 ₽'],
+  ['Бананы', '1 кг · 100 ₽'],
+  ['Макароны', '0,5 кг · 60 ₽'],
+  ['Чай/кофе', '— · 150 ₽'],
+  ['Специи, соль, сахар', '— · 100 ₽'],
+];
 
-        renderExpenses();
-    </script>
+// ============ ХРАНИЛИЩЕ ============
+function load() {
+  return {
+    expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
+    cartRich: JSON.parse(localStorage.getItem('cartRich') || '{}'),
+    cartThin: JSON.parse(localStorage.getItem('cartThin') || '{}'),
+  };
+}
+function saveExpenses(list) { localStorage.setItem('expenses', JSON.stringify(list)); }
+function saveCartRich(obj) { localStorage.setItem('cartRich', JSON.stringify(obj)); }
+function saveCartThin(obj) { localStorage.setItem('cartThin', JSON.stringify(obj)); }
+
+let selectedCat = 'продукты';
+
+// ============ ДОБАВЛЕНИЕ ============
+function addExpense() {
+  const input = document.getElementById('amount');
+  const amount = parseFloat(input.value);
+  if (!amount || amount <= 0) { input.focus(); return; }
+  const data = load();
+  data.expenses.push({ amount, category: selectedCat, date: new Date().toISOString() });
+  saveExpenses(data.expenses);
+  input.value = '';
+  input.focus();
+  haptic('light');
+  render();
+}
+function deleteExpense(index) {
+  if (!confirm('Удалить трату?')) return;
+  const data = load();
+  data.expenses.splice(index, 1);
+  saveExpenses(data.expenses);
+  haptic('medium');
+  render();
+}
+
+// ============ КАТЕГОРИИ ============
+function renderCategories() {
+  document.getElementById('catList').innerHTML = Object.entries(CATEGORIES).map(([key, c]) =>
+    `<button class="cat-btn ${key===selectedCat?'selected':''}" onclick="selectCat('${key}')">
+       <span class="emoji">${c.emoji}</span><span>${c.name}</span>
+     </button>`
+  ).join('');
+}
+function selectCat(key) {
+  selectedCat = key;
+  haptic('light');
+  renderCategories();
+}
+
+// ============ ХЕЛПЕРЫ ============
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; }
+function isSameDay(d1, d2) {
+  return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
+}
+function startOfWeek() {
+  const now = new Date();
+  const d = new Date(now);
+  const day = (now.getDay() + 6) % 7;
+  d.setDate(now.getDate() - day);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function getWeekExpenses() {
+  const start = startOfWeek();
+  return load().expenses.filter(e => new Date(e.date) >= start);
+}
+function getMonthExpenses() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  return load().expenses.filter(e => new Date(e.date) >= start);
+}
+
+// ============ РЕНДЕР ============
+function renderToday() {
+  const list = load().expenses.filter(e => isSameDay(new Date(e.date), new Date()));
+  const el = document.getElementById('todayList');
+  if (!list.length) { el.innerHTML = '<div class="empty">Сегодня трат не было</div>'; return; }
+  const all = load().expenses;
+  el.innerHTML = list.slice().reverse().map(e => {
+    const idx = all.indexOf(e);
+    const c = CATEGORIES[e.category];
+    return `<div class="expense">
+      <div class="left">
+        <span class="emoji">${c.emoji}</span>
+        <div class="info">
+          <span>${c.name}</span>
+          <span class="date">${new Date(e.date).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <span class="amount">${fmt(e.amount)}</span>
+        <button class="del" onclick="deleteExpense(${idx})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeek() {
+  const list = getWeekExpenses().filter(e => e.category !== 'подушка');
+  const total = list.reduce((s, e) => s + e.amount, 0);
+  document.getElementById('weekSpent').textContent = fmt(total);
+  document.getElementById('weekPlan').textContent = fmt(WEEK_PLAN);
+  const pct = Math.min(100, (total / WEEK_PLAN) * 100);
+  const bar = document.getElementById('weekBar');
+  bar.style.width = pct + '%';
+  bar.style.background = total > WEEK_PLAN 
+    ? 'linear-gradient(90deg,#f87171,#fbbf24)' 
+    : 'linear-gradient(90deg,#38bdf8,#a78bfa)';
+  const left = WEEK_PLAN - total;
+  document.getElementById('weekHint').textContent = left >= 0
+    ? `Осталось до конца недели: ${fmt(left)}`
+    : `⚠️ Перерасход: ${fmt(-left)}`;
+  renderBreakdown('weekBreakdown', list);
+}
+
+function renderMonth() {
+  const list = getMonthExpenses().filter(e => e.category !== 'подушка');
+  const total = list.reduce((s, e) => s + e.amount, 0);
+  document.getElementById('monthSpent').textContent = fmt(total);
+  const left = BUDGET_MONTH - total;
+  const leftEl = document.getElementById('monthLeft');
+  leftEl.textContent = fmt(left);
+  leftEl.className = 'value ' + (left > 0 ? 'green' : 'red');
+  const savings = load().expenses.filter(e => e.category === 'подушка').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('savingsTotal').textContent = fmt(savings);
+  renderBreakdown('monthBreakdown', list);
+  renderAll();
+}
+
+function renderBreakdown(elId, list) {
+  const total = list.reduce((s,e)=>s+e.amount,0);
+  const byCat = {};
+  list.forEach(e => byCat[e.category] = (byCat[e.category]||0) + e.amount);
+  const rows = Object.entries(byCat).sort((a,b) => b[1]-a[1]);
+  const el = document.getElementById(elId);
+  if (!rows.length) { el.innerHTML = '<div class="empty">Нет данных</div>'; return; }
+  el.innerHTML = rows.map(([k, v]) => {
+    const c = CATEGORIES[k] || {emoji:'❓', name:k};
+    const pct = (v / total) * 100;
+    return `<div class="bar-row">
+      <span class="name">${c.emoji} ${c.name}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <span class="val">${fmt(v)}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() {
+  const list = load().expenses;
+  const el = document.getElementById('allList');
+  if (!list.length) { el.innerHTML = '<div class="empty">Пока ничего нет</div>'; return; }
+  el.innerHTML = list.slice().reverse().slice(0, 100).map(e => {
+    const idx = list.indexOf(e);
+    const c = CATEGORIES[e.category];
+    const d = new Date(e.date);
+    return `<div class="expense">
+      <div class="left">
+        <span class="emoji">${c.emoji}</span>
+        <div class="info">
+          <span>${c.name}</span>
+          <span class="date">${d.toLocaleDateString('ru-RU')} ${d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <span class="amount">${fmt(e.amount)}</span>
+        <button class="del" onclick="deleteExpense(${idx})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============ КОРЗИНА ============
+function renderCart() {
+  const data = load();
+  ['rich', 'thin'].forEach(type => {
+    const items = type === 'rich' ? RICH_CART : THIN_CART;
+    const checked = type === 'rich' ? data.cartRich : data.cartThin;
+    const elId = type === 'rich' ? 'richList' : 'thinList';
+    document.getElementById(elId).innerHTML = items.map((item, i) => {
+      const done = checked[i] ? 'done' : '';
+      return `<li class="${done}" onclick="toggleCart('${type}', ${i})">
+        <span class="box">${checked[i] ? '✓' : ''}</span>
+        <div class="row"><span>${item[0]}</span><span class="price">${item[1]}</span></div>
+      </li>`;
+    }).join('');
+  });
+}
+function toggleCart(type, i) {
+  const data = load();
+  const obj = type === 'rich' ? data.cartRich : data.cartThin;
+  obj[i] = !obj[i];
+  if (type === 'rich') saveCartRich(obj); else saveCartThin(obj);
+  haptic('light');
+  renderCart();
+}
+
+// ============ ЭКСПОРТ / ИМПОРТ ============
+function exportData() {
+  const data = {
+    expenses: load().expenses,
+    cartRich: load().cartRich,
+    cartThin: load().cartThin,
+    exported: new Date().toISOString(),
+    version: 1,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `family-money-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!confirm('Заменить текущие данные файлом?')) return;
+      if (data.expenses) saveExpenses(data.expenses);
+      if (data.cartRich) saveCartRich(data.cartRich);
+      if (data.cartThin) saveCartThin(data.cartThin);
+      render();
+      alert('✅ Данные загружены');
+    } catch (err) {
+      alert('❌ Ошибка чтения файла');
+    }
+  };
+  reader.readAsText(file);
+}
+function resetAll() {
+  if (!confirm('Удалить ВСЕ данные без возможности восстановления?')) return;
+  if (!confirm('Точно? Лучше сначала скачай JSON!')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+// ============ ВКЛАДКИ ============
+function switchTab(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  haptic('light');
+}
+
+// ============ СТАРТ ============
+function render() {
+  renderCategories();
+  renderToday();
+  renderWeek();
+  renderMonth();
+  renderCart();
+}
+render();
+document.getElementById('amount').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addExpense();
+});
+</script>
 </body>
 </html>
