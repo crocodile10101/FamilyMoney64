@@ -16,13 +16,15 @@
     "0": false,
     "1": false,
     "2": false,
-    "3": false
+    "3": false,
+    "16": true,
+    "17": true
   },
   "cartThin": {},
   "meta": {
     "budgetMonth": 41000,
     "weekPlan": 10250,
     "family": "EfimovII & Co",
-    "updated": "2026-10-09T12:27:48.776Z"
+    "updated": "2026-10-09T12:27:56.375Z"
   }
 }
