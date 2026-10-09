@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Семейные траты</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            padding: 16px;
+            padding-bottom: 80px; /* Место для MainButton */
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-size: 20px; margin-bottom: 16px; }
+        .balance-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .balance-amount { font-size: 28px; font-weight: bold; margin: 8px 0; }
+        .expense-list { list-style: none; padding: 0; }
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #eee);
+        }
+        .expense-category { font-weight: 500; }
+        .expense-amount { color: var(--tg-theme-destructive-text-color, #ff3b30); }
+        .btn-add {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💚 Наши траты</h1>
+
+        <div class="balance-card">
+            <div>Остаток на месяц</div>
+            <div class="balance-amount" id="balance">41 000 ₽</div>
+            <div>Потрачено: <span id="spent">0</span> ₽</div>
+        </div>
+
+        <h2>Последние операции</h2>
+        <ul class="expense-list" id="expenseList">
+            <!-- Сюда будут добавляться траты -->
+        </ul>
+    </div>
+
+    <button class="btn-add" onclick="addExpense()">+</button>
+
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // Развернуть на весь экран
+
+        // Устанавливаем цвет заголовка как у Telegram
+        tg.setHeaderColor('secondary_bg_color');
+
+        // Твои данные (пока локально)
+        let balance = 41000;
+        let expenses = [];
+
+        // Пример добавления траты
+        function addExpense() {
+            // В реальном приложении тут будет всплывающая форма
+            const amount = parseFloat(prompt("Сумма:"));
+            const category = prompt("Категория (продукты, бензин, сигареты...):");
+
+            if (amount && category) {
+                expenses.push({ amount, category });
+                balance -= amount;
+                renderExpenses();
+
+                // Вибрация для тактильного отклика
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        function renderExpenses() {
+            const list = document.getElementById('expenseList');
+            const spentEl = document.getElementById('spent');
+            const balanceEl = document.getElementById('balance');
+
+            list.innerHTML = '';
+            let totalSpent = 0;
+
+            expenses.forEach(exp => {
+                totalSpent += exp.amount;
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                li.innerHTML = `
+                    <span class="expense-category">${exp.category}</span>
+                    <span class="expense-amount">-${exp.amount} ₽</span>
+                `;
+                list.appendChild(li);
+            });
+
+            spentEl.textContent = totalSpent.toLocaleString('ru-RU');
+            balanceEl.textContent = (41000 - totalSpent).toLocaleString('ru-RU') + ' ₽';
+        }
+
+        renderExpenses();
+    </script>
+</body>
+</html>
